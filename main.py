@@ -43,9 +43,11 @@ def get_pjm_interconnection_queue():
         "Fuel": "Generation Type",
         "MW Capacity": "Summer Capacity (MW)",
         "MW Energy": "Winter Capacity (MW)",
+        "Project Type": "Service Type"
     }
 
     extra = [
+        "Service Type",
         "MW In Service",
         "Commercial Name",
         "Initial Study",
@@ -65,7 +67,7 @@ def get_pjm_interconnection_queue():
         "Backfeed Date",
         "Long Term Firm Service Start Date",
         "Long Term Firm Service End Date",
-        "Test Energy Date",
+        "Test Energy Date"
     ]
 
     missing = ["Interconnecting Entity", "Interconnection Location"]
@@ -76,6 +78,8 @@ def get_pjm_interconnection_queue():
         extra=extra,
         missing=missing,
     )
+    
+    queue = queue[queue["Service Type"] == "Generation Interconnection"] # Returns only Generation Interconnection entries
 
     return queue
 
