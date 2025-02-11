@@ -4,8 +4,10 @@ import gridstatus # Only compatible with Python 3.11
 import requests
 import pandas as pd
 from gridstatus import utils
+from gridstatus.base import InterconnectionQueueStatus
 import re
 
+# PJM Get Queue Function
 def get_pjm_interconnection_queue():
     
     # Fetch the XML data from the URL
@@ -83,6 +85,84 @@ def get_pjm_interconnection_queue():
 
     return queue
 
+# SPP Get Queue Function    
+def get_spp_interconnection_queue():
+    """Get interconnection queue
+
+    Returns:
+        pandas.DataFrame: Interconnection queue
+    """
+    url = "https://opsportal.spp.org/Studies/GenerateSummaryCSV"
+    response = requests.get(url)
+    raw_data = utils.get_response_blob(response)
+    
+    queue = pd.read_csv(raw_data, skiprows=1)
+
+    queue["Status (Original)"] = queue["Status"]
+    completed_val = InterconnectionQueueStatus.COMPLETED.value
+    active_val = InterconnectionQueueStatus.ACTIVE.value
+    withdrawn_val = InterconnectionQueueStatus.WITHDRAWN.value
+    queue["Status"] = queue["Status"].map(
+        {
+            "IA FULLY EXECUTED/COMMERCIAL OPERATION": completed_val,
+            "IA FULLY EXECUTED/ON SCHEDULE": completed_val,
+            "IA FULLY EXECUTED/ON SUSPENSION": completed_val,
+            "IA PENDING": active_val,
+            "DISIS STAGE": active_val,
+            "None": active_val,
+            "WITHDRAWN": withdrawn_val,
+        },
+    )
+
+    queue["Generation Type"] = queue[["Generation Type", "Fuel Type"]].apply(
+        lambda x: " - ".join(x.dropna()),
+        axis=1,
+    )
+
+    queue["Proposed Completion Date"] = queue["Commercial Operation Date"]
+
+    rename = {
+        "Generation Interconnection Number": "Queue ID",
+        " Nearest Town or County": "County",
+        "State": "State",
+        "TO at POI": "Transmission Owner",
+        "Capacity": "Capacity (MW)",
+        "MAX Summer MW": "Summer Capacity (MW)",
+        "MAX Winter MW": "Winter Capacity (MW)",
+        "Generation Type": "Generation Type",
+        "Request Received": "Queue Date",
+        "Substation or Line": "Interconnection Location",
+        "Date Withdrawn": "Withdrawn Date",
+    }
+
+    # todo: there are a few columns being parsed
+    # as "unamed" that aren't being included but should
+    extra_columns = [
+        "In-Service Date",
+        "Commercial Operation Date",
+        "Cessation Date",
+        "Current Cluster",
+        "Cluster Group",
+        "Original Generator Commercial Op Date",
+        "Service Type",
+        "Status (Original)",
+    ]
+
+    missing = [
+        "Project Name",
+        "Interconnecting Entity",
+        "Withdrawal Comment",
+        "Actual Completion Date",
+    ]
+
+    queue = utils.format_interconnection_df(
+        queue=queue,
+        rename=rename,
+        extra=extra_columns,
+        missing=missing,
+    )
+
+    return queue
 
 # NYISO
 nyiso = gridstatus.NYISO()
@@ -97,8 +177,7 @@ caiso_queue = caiso.get_interconnection_queue()
 
 
 # SPP
-spp = gridstatus.SPP()
-spp_queue = spp.get_interconnection_queue()
+spp_queue = get_spp_interconnection_queue()
 # spp_queue.to_excel("test2.xlsx", index=False, engine='openpyxl')
 
 
@@ -167,3 +246,6 @@ with pd.ExcelWriter("Combined_ISO_Queues.xlsx", engine='openpyxl') as writer: # 
     combined_df.to_excel(writer, index=False, sheet_name="Active") # Active entries
     withdrawn_df.to_excel(writer, index=False, sheet_name="Withdrawn") # Withdrawn/deactivated entries
     completed_df.to_excel(writer, index=False, sheet_name="Completed") # Entries with completed/in-service status
+
+# Run Queue Cleanup
+exec(open("queue_cleanup.py").read())
