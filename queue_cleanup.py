@@ -117,6 +117,9 @@ def queue_cleanup(df):
     df['Interconnection Agreement Status'] = df['Interconnection Agreement Status'].apply(
         lambda x: f"IA {x}" if pd.notna(x) and x != "" else x
     )
+    
+    # Remove "completed" and "Done" values from "Status" column. These do not represent the status of the project but rather the interconnection agreement.
+    df.loc[df['Status'].str.contains(r'completed|done', case=False, na=False), 'Status'] = np.nan
 
     # Merge columns with a separator (e.g., a comma)
     columns_to_merge = ['Status', 'S', 'Status (Original)', 'Project Status', 
@@ -147,7 +150,7 @@ def queue_cleanup(df):
     df['Queue Date'] = df['Queue Date'].apply(correct_date_format)
 
     # Convert the column to datetime format, then apply the Excel short date format (MM/DD/YYYY)
-    df['Queue Date'] = pd.to_datetime(df['Queue Date']).dt.strftime('%m/%d/%Y')
+    df['Queue Date'] = pd.to_datetime(df['Queue Date'], errors='coerce').dt.strftime('%m/%d/%Y')
 
 
     # Step 7 - Completion/In-service Date Cleanup
@@ -186,14 +189,14 @@ def queue_cleanup(df):
     df['Planned Operation Date'] = df['Planned Operation Date'].apply(correct_date_format)
 
     # Convert the column to datetime format
-    df['Planned Operation Date'] = pd.to_datetime(df['Planned Operation Date'])
+    df['Planned Operation Date'] = pd.to_datetime(df['Planned Operation Date'], errors='coerce')
 
     # Create new columns for month and year
     df['Planned Operation Month'] = df['Planned Operation Date'].dt.month
     df['Planned Operation Year'] = df['Planned Operation Date'].dt.year
 
     # Convert the column to datetime format, then apply the Excel short date format (MM/DD/YYYY)
-    df['Planned Operation Date'] = pd.to_datetime(df['Planned Operation Date']).dt.strftime('%m/%d/%Y')
+    df['Planned Operation Date'] = pd.to_datetime(df['Planned Operation Date'], errors='coerce').dt.strftime('%m/%d/%Y')
 
 
     # Step 8 - Availability of Studies Cleanup (FS, SIS, etc.)

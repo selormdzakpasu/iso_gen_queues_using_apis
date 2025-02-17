@@ -217,11 +217,6 @@ statuses_withdrawn = [
     "Annulled", "Canceled", "Deactivated", "Retracted", "Suspended", "WITHDRAWN", "Withdrawn"
 ]
 
-# List of statuses to remove (Completed/In-Service)
-statuses_completed = [
-    "Completed", "Confirmed", "Done", "In Service", "COMPLETED"
-]
-
 # Create a DataFrame for entries with withdrawn status
 withdrawn_df_1 = combined_df[combined_df["Status"].isin(statuses_withdrawn)] # Check "Status" for withdrawn entries
 not_withdrawn_df = combined_df[~combined_df["Status"].isin(statuses_withdrawn)]
@@ -235,15 +230,32 @@ withdrawn_df = pd.concat(withdrawn, ignore_index=True)
 combined_df = combined_df[~combined_df["Status"].isin(statuses_withdrawn)]
 combined_df = combined_df[combined_df["Status (Original)"] != "TERMINATED"]
 
-# Create a DataFrame for entries with in-service/completed status
-completed_df = combined_df[combined_df["Status"].isin(statuses_completed)]
+# Create a DataFrame for entries with in-service status
+completed_df_1 = combined_df[combined_df["Status"] == "In Service"]
+active_df_1 = combined_df[combined_df["Status"] != "In Service"]
 
-# Remove rows with completed status from the main dataframe
-combined_df = combined_df[~combined_df["Status"].isin(statuses_completed)]
+completed_df_2 = active_df_1[active_df_1["Status (Original)"] == "IA FULLY EXECUTED/COMMERCIAL OPERATION"]
+active_df_2 = active_df_1[active_df_1["Status (Original)"] != "IA FULLY EXECUTED/COMMERCIAL OPERATION"]
+
+completed_df_3 = active_df_2[active_df_2["Project Status"] == "In Service"]
+active_df_3 = active_df_2[active_df_2["Project Status"] != "In Service"]
+
+# Ensure the "S" column is converted to integers
+completed_df_4 = active_df_3[active_df_3["S"] == 14] # "14" represents "In Service Commercial"
+active_df_4 = active_df_3[active_df_3["S"] != 14]
+
+completed_df_5 = active_df_4[active_df_4["Post Generator Interconnection Agreement Status"] == "In Service"]
+active_df_5 = active_df_4[active_df_4["Post Generator Interconnection Agreement Status"] != "In Service"]
+
+completed = [completed_df_1, completed_df_2, completed_df_3, completed_df_4, completed_df_5]
+completed_df = pd.concat(completed, ignore_index=True)
+
+# Active entries remain after removing rows with in service status from the main dataframe
+active_df = active_df_5
 
 # Export DataFrames to an Excel file
 with pd.ExcelWriter("Combined_ISO_Queues.xlsx", engine='openpyxl') as writer: # "Combined_ISO_Queues.xlsx" can be replaced with the desired file path & name
-    combined_df.to_excel(writer, index=False, sheet_name="Active") # Active entries
+    active_df.to_excel(writer, index=False, sheet_name="Active") # Active entries
     withdrawn_df.to_excel(writer, index=False, sheet_name="Withdrawn") # Withdrawn/deactivated entries
     completed_df.to_excel(writer, index=False, sheet_name="Completed") # Entries with completed/in-service status
 
