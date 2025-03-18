@@ -361,13 +361,13 @@ def queue_cleanup(df):
     df.rename(columns={'Withdrawn Date': 'Withdrawal Date'}, inplace=True)
 
     new_column_order = [
-        'Queue ID', 'Project Name', 'Entity', 'Queue Date', 'State', 'County', 'Service Type', 
-        'Status', 'Interconnection Location', 'Planned Operation Date', 
+        'Queue ID', 'Project Name', 'Entity', 'Queue Date', 'State', 'County', 'Latitude', 'Longitude',
+        'Service Type', 'Status', 'Interconnection Location', 'Planned Operation Date', 
         'Planned Operation Month', 'Planned Operation Year', 'Technology', 
         'Type-1', 'Type-2', 'Type-3', 'Capacity (MW)', 'MW-1', 'MW-2', 'MW-3', 
         'Summer Capacity (MW)', 'Winter Capacity (MW)', 'Capacity Status', 
-        'Availability of Studies', 'Current Cluster', 'Group', 'Cessation Date',
-        'Withdrawal Date', 'Comment'
+        'Availability of Studies', 'Balancing Authority Code', 'Balancing Authority Name',
+        'Current Cluster', 'Group', 'Cessation Date', 'Withdrawal Date', 'Comment'
     ]
 
     # Reorder the DataFrame columns

@@ -167,35 +167,59 @@ def get_spp_interconnection_queue():
 # NYISO
 nyiso = gridstatus.NYISO()
 nyiso_queue = nyiso.get_interconnection_queue()
+nyiso_queue['Balancing Authority Code'] = 'NYISO' # Adding Balancing Authority Code column
+nyiso_queue['Balancing Authority Name'] = 'New York Independent System Operator' # Adding Balancing Authority Name column
+nyiso_queue['Latitude'] = None # Adding Latitude column
+nyiso_queue['Longitude'] = None # Adding Longitude column
 # nyiso_queue.to_excel("test.xlsx", index=False, engine='openpyxl')
 
 
 # CAISO
 caiso = gridstatus.CAISO()
 caiso_queue = caiso.get_interconnection_queue()
+caiso_queue['Balancing Authority Code'] = 'CAISO'
+caiso_queue['Balancing Authority Name'] = 'California Independent System Operator'
+caiso_queue['Latitude'] = None
+caiso_queue['Longitude'] = None
 # caiso_queue.to_excel("test1.xlsx", index=False, engine='openpyxl')
 
 
 # SPP
 spp_queue = get_spp_interconnection_queue()
+spp_queue['Balancing Authority Code'] = 'SPP'
+spp_queue['Balancing Authority Name'] = 'Southwest Power Pool'
+spp_queue['Latitude'] = None 
+spp_queue['Longitude'] = None 
 # spp_queue.to_excel("test2.xlsx", index=False, engine='openpyxl')
 
 
 # ERCOT
 ercot = gridstatus.Ercot()
 ercot_queue = ercot.get_interconnection_queue()
+ercot_queue['Balancing Authority Code'] = 'ERCOT'
+ercot_queue['Balancing Authority Name'] = 'Electric Reliability Council of Texas'
+ercot_queue['Latitude'] = None
+ercot_queue['Longitude'] = None 
 # ercot_queue.to_excel("test3.xlsx", index=False, engine='openpyxl')
 
 
 # MISO
 miso = gridstatus.MISO()
 miso_queue = miso.get_interconnection_queue()
+miso_queue['Balancing Authority Code'] = 'MISO'
+miso_queue['Balancing Authority Name'] = 'Midcontinent Independent Transmission System Operator'
+miso_queue['Latitude'] = None
+miso_queue['Longitude'] = None 
 # miso_queue.to_excel("test4.xlsx", index=False, engine='openpyxl')
 
 
 # NEISO
 isone = gridstatus.ISONE()
 neiso_queue = isone.get_interconnection_queue()
+neiso_queue['Balancing Authority Code'] = 'NEISO'
+neiso_queue['Balancing Authority Name'] = 'New England Independent System Operator'
+neiso_queue['Latitude'] = None
+neiso_queue['Longitude'] = None 
 # neiso_queue.to_excel("test5.xlsx", index=False, engine='openpyxl')
 
 
@@ -205,6 +229,10 @@ neiso_queue = isone.get_interconnection_queue()
 #     f.write(pjm_queue.content) # Saves fetched file
 
 pjm_queue = get_pjm_interconnection_queue()
+pjm_queue['Balancing Authority Code'] = 'PJM'
+pjm_queue['Balancing Authority Name'] = 'PJM Interconnection, LLC'
+pjm_queue['Latitude'] = None
+pjm_queue['Longitude'] = None 
 # pjm_queue.to_excel("test6.xlsx", index=False, engine='openpyxl')
 
 
