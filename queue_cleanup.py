@@ -36,14 +36,20 @@ def queue_cleanup(df):
     # Drops the other columns
     df.drop(columns=columns_to_merge, axis=1, inplace=True)
 
-    # Convert "Capacity (MW)" and "Summer Capacity (MW)" columns to integers (handling NaNs gracefully)
-    df['Capacity (MW)'] = pd.to_numeric(df['Capacity (MW)'], errors='coerce').fillna(0).astype(int)
-    df['Summer Capacity (MW)'] = pd.to_numeric(df['Summer Capacity (MW)'], errors='coerce').fillna(0).astype(int)
+    # Convert "Capacity (MW)" "Winter Capacity (MW)" and "Summer Capacity (MW)" columns to integers (handling NaNs gracefully)
+    for col in ['Capacity (MW)', 'Summer Capacity (MW)', 'Winter Capacity (MW)']:
+        df[col] = (
+            pd.to_numeric(df[col], errors='coerce')
+            .fillna(0)
+            .astype(int)
+        )
 
-    # Merge "Summer Capacity (MW)" into "Capacity (MW)", replacing NaN and 0 values with integer treatment
-    df['Capacity (MW)'] = np.where((df['Capacity (MW)'] == 0),
-                                df['Summer Capacity (MW)'],
-                                df['Capacity (MW)'])
+    # Max of "Summer Capacity (MW)" and "Winter Capacity (MW)" into "Capacity (MW)"
+    df['Capacity (MW)'] = (
+        df[['Summer Capacity (MW)', 'Winter Capacity (MW)']]
+        .max(axis=1)
+        .astype(int)
+    )
 
 
     # Step 3 - Unit Type Cleanup
